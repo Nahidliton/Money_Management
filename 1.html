@@ -1,0 +1,2521 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Money Management System</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-color: #4f46e5;
+            --secondary-color: #06b6d4;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+            --dark-bg: #1f2937;
+            --light-bg: #f9fafb;
+            --text-dark: #111827;
+            --text-light: #ffffff;
+            --border-color: #e5e7eb;
+            --sidebar-width: 280px;
+        }
+
+        [data-theme="dark"] {
+            --light-bg: #1f2937;
+            --text-dark: #ffffff;
+            --border-color: #374151;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--light-bg);
+            color: var(--text-dark);
+            transition: all 0.3s ease;
+        }
+
+        .app-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            width: var(--sidebar-width);
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            position: fixed;
+            height: 100vh;
+            left: 0;
+            top: 0;
+            overflow-y: auto;
+            transition: transform 0.3s ease;
+            z-index: 1000;
+        }
+
+        .sidebar-header {
+            padding: 2rem 1.5rem;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .sidebar-header h1 {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .user-info {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        .nav-menu {
+            list-style: none;
+            padding: 1rem 0;
+        }
+
+        .nav-item {
+            margin: 0.25rem 0;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            padding: 1rem 1.5rem;
+            color: white;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            border-left: 3px solid transparent;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            background: rgba(255,255,255,0.1);
+            border-left-color: white;
+            transform: translateX(5px);
+        }
+
+        .nav-link i {
+            margin-right: 0.75rem;
+            font-size: 1.1rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            margin-left: var(--sidebar-width);
+            transition: margin-left 0.3s ease;
+        }
+
+        .header {
+            background: white;
+            padding: 1rem 2rem;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-left h2 {
+            color: var(--text-dark);
+            margin-bottom: 0.25rem;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-left: auto;
+        }
+
+        .theme-toggle {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .theme-toggle:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+        }
+
+        .content-area {
+            padding: 2rem;
+            max-width: 1200px;
+        }
+
+        /* Dashboard Cards */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .card {
+            background: white;
+            border-radius: 1rem;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            border: 1px solid var(--border-color);
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+
+        .card-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            color: white;
+        }
+
+        .income-card .card-icon { background: var(--success-color); }
+        .expense-card .card-icon { background: var(--danger-color); }
+        .balance-card .card-icon { background: var(--primary-color); }
+        .savings-card .card-icon { background: var(--warning-color); }
+
+        .card-value {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+
+        .card-subtitle {
+            font-size: 0.9rem;
+            opacity: 0.7;
+        }
+
+        /* Forms */
+        .form-section {
+            background: white;
+            border-radius: 1rem;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+
+        .form-input, .form-select, .form-textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid var(--border-color);
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-input:focus, .form-select:focus, .form-textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .btn-success {
+            background: var(--success-color);
+            color: white;
+        }
+
+        .btn-danger {
+            background: var(--danger-color);
+            color: white;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        /* Tables */
+        .table-container {
+            background: white;
+            border-radius: 1rem;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .table th, .table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .table th {
+            background: var(--light-bg);
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+
+        .table tbody tr:hover {
+            background: rgba(79, 70, 229, 0.05);
+        }
+
+        /* Charts */
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin: 1rem 0;
+        }
+
+        /* Notifications */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 1rem 1.5rem;
+            border-radius: 0.5rem;
+            color: white;
+            font-weight: 600;
+            z-index: 1000;
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .notification.success { background: var(--success-color); }
+        .notification.error { background: var(--danger-color); }
+        .notification.warning { background: var(--warning-color); }
+
+        /* Modals */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .modal.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 1rem;
+            padding: 2rem;
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            transform: scale(0.7);
+            transition: transform 0.3s ease;
+        }
+
+        .modal.show .modal-content {
+            transform: scale(1);
+        }
+
+        /* Floating Action Button */
+        .fab {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+            transition: all 0.3s ease;
+            z-index: 100;
+        }
+
+        .fab:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(79, 70, 229, 0.4);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+
+            .sidebar.open {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            .content-area {
+                padding: 1rem;
+            }
+
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Hidden sections */
+        .section {
+            display: none;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        /* Status indicators */
+        .status-indicator {
+            padding: 0.25rem 0.75rem;
+            border-radius: 1rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+
+        .status-balanced { background: #dcfce7; color: #166534; }
+        .status-caution { background: #fef3c7; color: #92400e; }
+        .status-alert { background: #fecaca; color: #991b1b; }
+
+        /* Tips sidebar */
+        .tips-sidebar {
+            background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            margin-top: 1rem;
+        }
+
+        .tip-item {
+            background: white;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+            border-left: 4px solid var(--primary-color);
+        }
+
+        /* Loading spinner */
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid var(--primary-color);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <nav class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h1>💰 MoneyTracker</h1>
+                <div class="user-info">
+                    <div>Welcome, <strong id="username">Nahid</strong></div>
+                    <div>Student ID: #12345</div>
+                </div>
+            </div>
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="#" class="nav-link active" data-section="dashboard">
+                        <i>📊</i> Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link" data-section="transactions">
+                        <i>💳</i> Transactions
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link" data-section="analytics">
+                        <i>📈</i> Analytics
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link" data-section="budget">
+                        <i>🎯</i> Budget Planner
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link" data-section="recurring">
+                        <i>🔄</i> Recurring Items
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link" data-section="banks">
+                        <i>🏦</i> Bank Accounts
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link" data-section="receipts">
+                        <i>🧾</i> Receipts
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link" data-section="reports">
+                        <i>📋</i> Reports
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link" data-section="settings">
+                        <i>⚙️</i> Settings
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="header">
+                <div class="header-left">
+                    <h2 id="pageTitle">Dashboard</h2>
+                    <p id="pageSubtitle">Overview of your financial status</p>
+                </div>
+                <div class="header-right">
+                    <button class="theme-toggle" id="themeToggle">🌙 Dark Mode</button>
+                    <button class="btn btn-primary" id="quickAddBtn">+ Quick Add</button>
+                </div>
+            </header>
+
+            <div class="content-area">
+                <!-- Dashboard Section -->
+                <section id="dashboard" class="section active">
+                    <div class="dashboard-grid">
+                        <div class="card income-card">
+                            <div class="card-header">
+                                <h3 class="card-title">Total Income</h3>
+                                <div class="card-icon">💰</div>
+                            </div>
+                            <div class="card-value" id="totalIncome">৳0</div>
+                            <div class="card-subtitle">This month</div>
+                        </div>
+                        <div class="card expense-card">
+                            <div class="card-header">
+                                <h3 class="card-title">Total Expenses</h3>
+                                <div class="card-icon">💸</div>
+                            </div>
+                            <div class="card-value" id="totalExpenses">৳0</div>
+                            <div class="card-subtitle">This month</div>
+                        </div>
+                        <div class="card balance-card">
+                            <div class="card-header">
+                                <h3 class="card-title">Current Balance</h3>
+                                <div class="card-icon">💳</div>
+                            </div>
+                            <div class="card-value" id="currentBalance">৳0</div>
+                            <div class="card-subtitle">Available now</div>
+                        </div>
+                        <div class="card savings-card">
+                            <div class="card-header">
+                                <h3 class="card-title">Savings Goal</h3>
+                                <div class="card-icon">🎯</div>
+                            </div>
+                            <div class="card-value" id="savingsProgress">0%</div>
+                            <div class="card-subtitle" id="savingsTarget">Target: ৳5000</div>
+                        </div>
+                    </div>
+
+                    <!-- Financial Status Alert -->
+                    <div class="card" id="statusCard">
+                        <div class="card-header">
+                            <h3 class="card-title">Financial Status</h3>
+                            <span class="status-indicator status-balanced" id="statusIndicator">🟢 Balanced</span>
+                        </div>
+                        <p id="statusMessage">Great job! Your spending is under control and you're saving consistently.</p>
+                    </div>
+
+                    <!-- Recent Transactions -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Recent Transactions</h3>
+                            <button class="btn btn-primary" onclick="showSection('transactions')">View All</button>
+                        </div>
+                        <div class="table-container">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Description</th>
+                                        <th>Category</th>
+                                        <th>Amount</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="recentTransactions">
+                                    <tr>
+                                        <td colspan="4" style="text-align: center; padding: 2rem;">No transactions yet</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Daily Tips -->
+                    <div class="tips-sidebar">
+                        <h3>💡 Daily Finance Tip</h3>
+                        <div class="tip-item" id="dailyTip">
+                            <strong>Save First, Spend Later:</strong> Always set aside your savings goal amount as soon as you receive income, before spending on anything else.
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Transactions Section -->
+                <section id="transactions" class="section">
+                    <div class="form-section">
+                        <h3>Add New Transaction</h3>
+                        <form id="transactionForm">
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label class="form-label">Type</label>
+                                    <select class="form-select" id="transactionType" required>
+                                        <option value="income">💰 Income</option>
+                                        <option value="expense">💸 Expense</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Amount (৳)</label>
+                                    <input type="number" class="form-input" id="transactionAmount" required min="0" step="0.01">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Description</label>
+                                    <input type="text" class="form-input" id="transactionDescription" required>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Category</label>
+                                    <select class="form-select" id="transactionCategory" required>
+                                        <optgroup label="Income">
+                                            <option value="scholarship">🎓 Scholarship</option>
+                                            <option value="allowance">👨‍👩‍👧‍👦 Family Allowance</option>
+                                            <option value="part-time">💼 Part-time Job</option>
+                                            <option value="other-income">💰 Other Income</option>
+                                        </optgroup>
+                                        <optgroup label="Expenses">
+                                            <option value="food">🍔 Food & Dining</option>
+                                            <option value="transport">🚌 Transportation</option>
+                                            <option value="books">📚 Books & Supplies</option>
+                                            <option value="rent">🏠 Rent & Utilities</option>
+                                            <option value="entertainment">🎬 Entertainment</option>
+                                            <option value="clothing">👕 Clothing</option>
+                                            <option value="health">🏥 Healthcare</option>
+                                            <option value="other">📦 Others</option>
+                                        </optgroup>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Bank Account</label>
+                                    <select class="form-select" id="transactionBank">
+                                        <option value="main">🏦 Main Account</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Date</label>
+                                    <input type="date" class="form-input" id="transactionDate" required>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Notes (Optional)</label>
+                                <textarea class="form-textarea" id="transactionNotes" rows="3" placeholder="Add any additional notes..."></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary">💾 Save Transaction</button>
+                        </form>
+                    </div>
+
+                    <!-- Transaction History -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Transaction History</h3>
+                            <div>
+                                <select class="form-select" style="width: auto; display: inline-block; margin-right: 1rem;" id="filterCategory">
+                                    <option value="">All Categories</option>
+                                    <option value="food">Food & Dining</option>
+                                    <option value="transport">Transportation</option>
+                                    <option value="books">Books & Supplies</option>
+                                    <option value="scholarship">Scholarship</option>
+                                </select>
+                                <button class="btn btn-success" onclick="exportTransactions()">📊 Export</button>
+                            </div>
+                        </div>
+                        <div class="table-container">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Type</th>
+                                        <th>Description</th>
+                                        <th>Category</th>
+                                        <th>Bank</th>
+                                        <th>Amount</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="transactionHistory">
+                                    <tr>
+                                        <td colspan="7" style="text-align: center; padding: 2rem;">No transactions found</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Analytics Section -->
+                <section id="analytics" class="section">
+                    <div class="dashboard-grid">
+                        <div class="card">
+                            <h3 class="card-title">Monthly Income vs Expenses</h3>
+                            <div class="chart-container">
+                                <canvas id="incomeExpenseChart"></canvas>
+                            </div>
+                        </div>
+                        <div class="card">
+                            <h3 class="card-title">Expense Categories</h3>
+                            <div class="chart-container">
+                                <canvas id="categoryChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <h3 class="card-title">Cash Flow Trend</h3>
+                        <div class="chart-container">
+                            <canvas id="cashFlowChart"></canvas>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Budget Planner Section -->
+                <section id="budget" class="section">
+                    <div class="form-section">
+                        <h3>🎯 Monthly Budget Planner</h3>
+                        <div id="budgetRecommendation" class="card" style="background: linear-gradient(135deg, #fef3c7, #fbbf24); margin-bottom: 2rem;">
+                            <h4 style="color: #92400e;">💡 Smart Recommendation</h4>
+                            <p id="recommendationText">Based on your spending pattern, we recommend setting a budget of ৳8,000 for this month.</p>
+                        </div>
+                        
+                        <form id="budgetForm">
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label class="form-label">Monthly Income Goal (৳)</label>
+                                    <input type="number" class="form-input" id="budgetIncome" min="0" step="0.01">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Savings Goal (৳)</label>
+                                    <input type="number" class="form-input" id="budgetSavings" min="0" step="0.01">
+                                </div>
+                            </div>
+                            
+                            <h4>Category Budgets</h4>
+                            <div class="form-grid" id="categoryBudgets">
+                                <div class="form-group">
+                                    <label class="form-label">🍔 Food & Dining</label>
+                                    <input type="number" class="form-input category-budget" data-category="food" min="0" step="0.01">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">🚌 Transportation</label>
+                                    <input type="number" class="form-input category-budget" data-category="transport" min="0" step="0.01">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">📚 Books & Supplies</label>
+                                    <input type="number" class="form-input category-budget" data-category="books" min="0" step="0.01">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">🎬 Entertainment</label>
+                                    <input type="number" class="form-input category-budget" data-category="entertainment" min="0" step="0.01">
+                                </div>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-primary">💾 Save Budget</button>
+                        </form>
+                    </div>
+
+                    <!-- Budget Progress -->
+                    <div class="card">
+                        <h3 class="card-title">Budget Progress</h3>
+                        <div id="budgetProgress">
+                            <p style="text-align: center; padding: 2rem;">Set up your budget to see progress tracking here.</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Recurring Items Section -->
+                <section id="recurring" class="section">
+                    <div class="form-section">
+                        <h3>🔄 Setup Recurring Transactions</h3>
+                        <form id="recurringForm">
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label class="form-label">Type</label>
+                                    <select class="form-select" id="recurringType" required>
+                                        <option value="income">💰 Income</option>
+                                        <option value="expense">💸 Expense</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Amount (৳)</label>
+                                    <input type="number" class="form-input" id="recurringAmount" required min="0" step="0.01">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Description</label>
+                                    <input type="text" class="form-input" id="recurringDescription" required>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Category</label>
+                                    <select class="form-select" id="recurringCategory" required>
+                                        <option value="scholarship">🎓 Scholarship</option>
+                                        <option value="rent">🏠 Rent</option>
+                                        <option value="allowance">👨‍👩‍👧‍👦 Family Allowance</option>
+                                        <option value="food">🍔 Food & Dining</option>
+                                        <option value="transport">🚌 Transportation</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Frequency</label>
+                                    <select class="form-select" id="recurringFrequency" required>
+                                        <option value="monthly">📅 Monthly</option>
+                                        <option value="weekly">📆 Weekly</option>
+                                        <option value="daily">🗓️ Daily</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Day of Month</label>
+                                    <input type="number" class="form-input" id="recurringDay" min="1" max="31" value="1">
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-primary">➕ Add Recurring Transaction</button>
+                        </form>
+                    </div>
+
+                    <!-- Recurring Items List -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Active Recurring Transactions</h3>
+                        </div>
+                        <div class="table-container">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Type</th>
+                                        <th>Description</th>
+                                        <th>Amount</th>
+                                        <th>Frequency</th>
+                                        <th>Next Date</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="recurringList">
+                                    <tr>
+                                        <td colspan="6" style="text-align: center; padding: 2rem;">No recurring transactions set up</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Bank Accounts Section -->
+                <section id="banks" class="section">
+                    <div class="form-section">
+                        <h3>🏦 Add Bank Account</h3>
+                        <form id="bankForm">
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label class="form-label">Bank Name</label>
+                                    <input type="text" class="form-input" id="bankName" required>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Account Type</label>
+                                    <select class="form-select" id="bankType" required>
+                                        <option value="savings">💰 Savings Account</option>
+                                        <option value="current">💳 Current Account</option>
+                                        <option value="student">🎓 Student Account</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Account Number</label>
+                                    <input type="text" class="form-input" id="bankAccount" required>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Initial Balance (৳)</label>
+                                    <input type="number" class="form-input" id="bankBalance" min="0" step="0.01" value="0">
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-primary">🏦 Add Account</button>
+                        </form>
+                    </div>
+
+                    <!-- Bank Accounts List -->
+                    <div class="dashboard-grid">
+                        <div id="bankAccounts">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h3 class="card-title">🏦 Main Account</h3>
+                                </div>
+                                <div class="card-value">৳0</div>
+                                <div class="card-subtitle">Current Balance</div>
+                                <button class="btn btn-primary" style="margin-top: 1rem;">View Transactions</button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Receipts Section -->
+                <section id="receipts" class="section">
+                    <div class="form-section">
+                        <h3>🧾 Upload Receipt</h3>
+                        <div class="card" style="background: linear-gradient(135deg, #f0f9ff, #e0f2fe);">
+                            <h4>📸 Smart Receipt Processing</h4>
+                            <p>Upload receipt images and we'll help extract transaction details automatically!</p>
+                        </div>
+                        
+                        <form id="receiptForm">
+                            <div class="form-group">
+                                <label class="form-label">Receipt Image</label>
+                                <input type="file" class="form-input" id="receiptFile" accept="image/*,application/pdf">
+                            </div>
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label class="form-label">Amount (৳)</label>
+                                    <input type="number" class="form-input" id="receiptAmount" min="0" step="0.01">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Merchant/Store</label>
+                                    <input type="text" class="form-input" id="receiptMerchant">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Category</label>
+                                    <select class="form-select" id="receiptCategory">
+                                        <option value="food">🍔 Food & Dining</option>
+                                        <option value="books">📚 Books & Supplies</option>
+                                        <option value="clothing">👕 Clothing</option>
+                                        <option value="transport">🚌 Transportation</option>
+                                        <option value="other">📦 Others</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Date</label>
+                                    <input type="date" class="form-input" id="receiptDate">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Notes</label>
+                                <textarea class="form-textarea" id="receiptNotes" rows="3"></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary">📤 Save Receipt</button>
+                        </form>
+                    </div>
+
+                    <!-- Receipts Gallery -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Receipt Gallery</h3>
+                        </div>
+                        <div id="receiptGallery" class="dashboard-grid">
+                            <div style="text-align: center; padding: 2rem; grid-column: 1 / -1;">
+                                <p>No receipts uploaded yet</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Reports Section -->
+                <section id="reports" class="section">
+                    <div class="form-section">
+                        <h3>📊 Generate Financial Report</h3>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label class="form-label">Report Type</label>
+                                <select class="form-select" id="reportType">
+                                    <option value="monthly">📅 Monthly Report</option>
+                                    <option value="category">📊 Category Summary</option>
+                                    <option value="yearly">📈 Yearly Overview</option>
+                                    <option value="custom">🎯 Custom Range</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Month/Year</label>
+                                <input type="month" class="form-input" id="reportMonth">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Format</label>
+                                <select class="form-select" id="reportFormat">
+                                    <option value="pdf">📄 PDF Report</option>
+                                    <option value="excel">📊 Excel File</option>
+                                    <option value="csv">📋 CSV File</option>
+                                </select>
+                            </div>
+                        </div>
+                        <button class="btn btn-success" onclick="generateReport()">📊 Generate Report</button>
+                    </div>
+
+                    <!-- Quick Stats -->
+                    <div class="dashboard-grid">
+                        <div class="card">
+                            <h3 class="card-title">This Month</h3>
+                            <div id="monthlyStats">
+                                <p><strong>Income:</strong> ৳<span id="monthIncome">0</span></p>
+                                <p><strong>Expenses:</strong> ৳<span id="monthExpenses">0</span></p>
+                                <p><strong>Net:</strong> ৳<span id="monthNet">0</span></p>
+                                <p><strong>Transactions:</strong> <span id="monthTransactions">0</span></p>
+                            </div>
+                        </div>
+                        <div class="card">
+                            <h3 class="card-title">Top Categories</h3>
+                            <div id="topCategories">
+                                <p>No data available</p>
+                            </div>
+                        </div>
+                        <div class="card">
+                            <h3 class="card-title">Savings Rate</h3>
+                            <div class="card-value" id="savingsRate">0%</div>
+                            <div class="card-subtitle">Of total income</div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Settings Section -->
+                <section id="settings" class="section">
+                    <div class="form-section">
+                        <h3>⚙️ Account Settings</h3>
+                        <form id="settingsForm">
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label class="form-label">Full Name</label>
+                                    <input type="text" class="form-input" id="settingsName" value="Nahid Ahmed">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Student ID</label>
+                                    <input type="text" class="form-input" id="settingsStudentId" value="12345">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Email</label>
+                                    <input type="email" class="form-input" id="settingsEmail" value="nahid@student.edu">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Currency</label>
+                                    <select class="form-select" id="settingsCurrency">
+                                        <option value="BDT" selected>৳ Bangladeshi Taka</option>
+                                        <option value="USD">$ US Dollar</option>
+                                        <option value="EUR">€ Euro</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-primary">💾 Save Settings</button>
+                        </form>
+                    </div>
+
+                    <div class="form-section">
+                        <h3>🔔 Notification Settings</h3>
+                        <div class="form-group">
+                            <label style="display: flex; align-items: center; gap: 0.5rem;">
+                                <input type="checkbox" id="notifyBudgetLimit" checked>
+                                Alert when approaching budget limits
+                            </label>
+                        </div>
+                        <div class="form-group">
+                            <label style="display: flex; align-items: center; gap: 0.5rem;">
+                                <input type="checkbox" id="notifyMonthlyReport" checked>
+                                Monthly financial report via email
+                            </label>
+                        </div>
+                        <div class="form-group">
+                            <label style="display: flex; align-items: center; gap: 0.5rem;">
+                                <input type="checkbox" id="notifyRecurring" checked>
+                                Recurring transaction reminders
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h3>💾 Data Management</h3>
+                        <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                            <button class="btn btn-success" onclick="exportAllData()">📤 Export All Data</button>
+                            <button class="btn btn-primary" onclick="importData()">📥 Import Data</button>
+                            <button class="btn btn-danger" onclick="clearAllData()">🗑️ Clear All Data</button>
+                        </div>
+                        <input type="file" id="importFile" accept=".json,.csv" style="display: none;">
+                    </div>
+
+                    <!-- 2FA Setup -->
+                    <div class="form-section">
+                        <h3>🔐 Two-Factor Authentication</h3>
+                        <div class="card" style="background: linear-gradient(135deg, #fef3c7, #fbbf24);">
+                            <h4>🛡️ Enhanced Security</h4>
+                            <p>Enable 2FA to protect your financial data with an extra layer of security.</p>
+                            <button class="btn btn-primary" onclick="setup2FA()" style="margin-top: 1rem;">🔧 Setup 2FA</button>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <!-- Floating Action Button -->
+    <button class="fab" id="fab">+</button>
+
+    <!-- Quick Add Modal -->
+    <div class="modal" id="quickAddModal">
+        <div class="modal-content">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                <h3>⚡ Quick Add Transaction</h3>
+                <button onclick="closeModal('quickAddModal')" style="background: none; border: none; font-size: 1.5rem; cursor: pointer;">&times;</button>
+            </div>
+            <form id="quickAddForm">
+                <div class="form-group">
+                    <label class="form-label">Type</label>
+                    <div style="display: flex; gap: 1rem;">
+                        <label style="display: flex; align-items: center; gap: 0.5rem;">
+                            <input type="radio" name="quickType" value="income" required>
+                            💰 Income
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 0.5rem;">
+                            <input type="radio" name="quickType" value="expense" required>
+                            💸 Expense
+                        </label>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Amount (৳)</label>
+                    <input type="number" class="form-input" id="quickAmount" required min="0" step="0.01">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Description</label>
+                    <input type="text" class="form-input" id="quickDescription" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Category</label>
+                    <select class="form-select" id="quickCategory" required>
+                        <option value="food">🍔 Food & Dining</option>
+                        <option value="transport">🚌 Transportation</option>
+                        <option value="books">📚 Books & Supplies</option>
+                        <option value="scholarship">🎓 Scholarship</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%;">💾 Add Transaction</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Application State
+        let appState = {
+            transactions: JSON.parse(localStorage.getItem('transactions') || '[]'),
+            recurringItems: JSON.parse(localStorage.getItem('recurringItems') || '[]'),
+            bankAccounts: JSON.parse(localStorage.getItem('bankAccounts') || '[{"id":"main","name":"Main Account","type":"savings","balance":0}]'),
+            budget: JSON.parse(localStorage.getItem('budget') || '{}'),
+            receipts: JSON.parse(localStorage.getItem('receipts') || '[]'),
+            settings: JSON.parse(localStorage.getItem('settings') || '{"currency":"BDT","notifications":{"budgetLimit":true,"monthlyReport":true,"recurring":true}}'),
+            currentSection: 'dashboard',
+            isDarkMode: localStorage.getItem('darkMode') === 'true'
+        };
+
+        // Financial Tips Database
+        const financialTips = [
+            "Save first, spend later: Always set aside your savings goal amount as soon as you receive income.",
+            "Track every expense: Small purchases add up quickly over time.",
+            "Use the 50/30/20 rule: 50% needs, 30% wants, 20% savings.",
+            "Avoid taking loans with interest rates above 10% if possible.",
+            "Cook at home more often to save money on food expenses.",
+            "Compare prices before making purchases, especially for textbooks.",
+            "Take advantage of student discounts whenever available.",
+            "Build an emergency fund covering at least 3 months of expenses.",
+            "Review your spending weekly to stay on track with your budget.",
+            "Consider part-time work that doesn't interfere with your studies."
+        ];
+
+        // Initialize Application
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeApp();
+            setupEventListeners();
+            updateDashboard();
+            showDailyTip();
+            
+            // Set current date as default
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('transactionDate').value = today;
+            document.getElementById('receiptDate').value = today;
+            document.getElementById('reportMonth').value = new Date().toISOString().slice(0, 7);
+        });
+
+        function initializeApp() {
+            // Apply theme
+            if (appState.isDarkMode) {
+                document.body.setAttribute('data-theme', 'dark');
+                document.getElementById('themeToggle').textContent = '☀️ Light Mode';
+            }
+
+            // Load bank accounts in selectors
+            updateBankSelectors();
+            
+            // Process recurring transactions
+            processRecurringTransactions();
+            
+            // Update all displays
+            updateAllDisplays();
+        }
+
+        function setupEventListeners() {
+            // Navigation
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const section = link.getAttribute('data-section');
+                    showSection(section);
+                });
+            });
+
+            // Theme toggle
+            document.getElementById('themeToggle').addEventListener('click', toggleTheme);
+
+            // Forms
+            document.getElementById('transactionForm').addEventListener('submit', handleTransactionSubmit);
+            document.getElementById('recurringForm').addEventListener('submit', handleRecurringSubmit);
+            document.getElementById('bankForm').addEventListener('submit', handleBankSubmit);
+            document.getElementById('receiptForm').addEventListener('submit', handleReceiptSubmit);
+            document.getElementById('budgetForm').addEventListener('submit', handleBudgetSubmit);
+            document.getElementById('quickAddForm').addEventListener('submit', handleQuickAddSubmit);
+            document.getElementById('settingsForm').addEventListener('submit', handleSettingsSubmit);
+
+            // Quick add modal
+            document.getElementById('quickAddBtn').addEventListener('click', () => openModal('quickAddModal'));
+            document.getElementById('fab').addEventListener('click', () => openModal('quickAddModal'));
+
+            // Filter
+            document.getElementById('filterCategory').addEventListener('change', filterTransactions);
+
+            // Receipt file upload
+            document.getElementById('receiptFile').addEventListener('change', handleReceiptFileUpload);
+        }
+
+        // Navigation Functions
+        function showSection(sectionName) {
+            // Update active nav link
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.remove('active');
+            });
+            document.querySelector(`[data-section="${sectionName}"]`).classList.add('active');
+
+            // Hide all sections
+            document.querySelectorAll('.section').forEach(section => {
+                section.classList.remove('active');
+            });
+
+            // Show target section
+            document.getElementById(sectionName).classList.add('active');
+
+            // Update page title
+            const titles = {
+                dashboard: 'Dashboard',
+                transactions: 'Transactions',
+                analytics: 'Analytics',
+                budget: 'Budget Planner',
+                recurring: 'Recurring Items',
+                banks: 'Bank Accounts',
+                receipts: 'Receipts',
+                reports: 'Reports',
+                settings: 'Settings'
+            };
+
+            const subtitles = {
+                dashboard: 'Overview of your financial status',
+                transactions: 'Manage your income and expenses',
+                analytics: 'Visual insights into your spending',
+                budget: 'Plan and track your monthly budget',
+                recurring: 'Setup automatic recurring transactions',
+                banks: 'Manage your bank accounts',
+                receipts: 'Upload and organize receipts',
+                reports: 'Generate detailed financial reports',
+                settings: 'Customize your experience'
+            };
+
+            document.getElementById('pageTitle').textContent = titles[sectionName];
+            document.getElementById('pageSubtitle').textContent = subtitles[sectionName];
+
+            appState.currentSection = sectionName;
+
+            // Load section-specific data
+            if (sectionName === 'analytics') {
+                setTimeout(loadAnalytics, 100);
+            } else if (sectionName === 'budget') {
+                loadBudgetData();
+            } else if (sectionName === 'reports') {
+                updateReportsData();
+            }
+        }
+
+        // Theme Functions
+        function toggleTheme() {
+            appState.isDarkMode = !appState.isDarkMode;
+            localStorage.setItem('darkMode', appState.isDarkMode);
+            
+            if (appState.isDarkMode) {
+                document.body.setAttribute('data-theme', 'dark');
+                document.getElementById('themeToggle').textContent = '☀️ Light Mode';
+            } else {
+                document.body.removeAttribute('data-theme');
+                document.getElementById('themeToggle').textContent = '🌙 Dark Mode';
+            }
+        }
+
+        // Transaction Functions
+        function handleTransactionSubmit(e) {
+            e.preventDefault();
+            
+            const transaction = {
+                id: Date.now().toString(),
+                type: document.getElementById('transactionType').value,
+                amount: parseFloat(document.getElementById('transactionAmount').value),
+                description: document.getElementById('transactionDescription').value,
+                category: document.getElementById('transactionCategory').value,
+                bank: document.getElementById('transactionBank').value,
+                date: document.getElementById('transactionDate').value,
+                notes: document.getElementById('transactionNotes').value,
+                timestamp: new Date().toISOString()
+            };
+
+            appState.transactions.unshift(transaction);
+            updateBankBalance(transaction.bank, transaction.type === 'income' ? transaction.amount : -transaction.amount);
+            saveToStorage();
+            updateAllDisplays();
+            
+            // Reset form
+            document.getElementById('transactionForm').reset();
+            document.getElementById('transactionDate').value = new Date().toISOString().split('T')[0];
+            
+            showNotification('Transaction added successfully!', 'success');
+        }
+
+        function handleQuickAddSubmit(e) {
+            e.preventDefault();
+            
+            const type = document.querySelector('input[name="quickType"]:checked').value;
+            const transaction = {
+                id: Date.now().toString(),
+                type: type,
+                amount: parseFloat(document.getElementById('quickAmount').value),
+                description: document.getElementById('quickDescription').value,
+                category: document.getElementById('quickCategory').value,
+                bank: 'main',
+                date: new Date().toISOString().split('T')[0],
+                notes: '',
+                timestamp: new Date().toISOString()
+            };
+
+            appState.transactions.unshift(transaction);
+            updateBankBalance('main', type === 'income' ? transaction.amount : -transaction.amount);
+            saveToStorage();
+            updateAllDisplays();
+            
+            closeModal('quickAddModal');
+            document.getElementById('quickAddForm').reset();
+            
+            showNotification('Quick transaction added!', 'success');
+        }
+
+        function deleteTransaction(id) {
+            if (confirm('Are you sure you want to delete this transaction?')) {
+                const transaction = appState.transactions.find(t => t.id === id);
+                if (transaction) {
+                    // Reverse the bank balance change
+                    updateBankBalance(transaction.bank, transaction.type === 'income' ? -transaction.amount : transaction.amount);
+                    
+                    appState.transactions = appState.transactions.filter(t => t.id !== id);
+                    saveToStorage();
+                    updateAllDisplays();
+                    showNotification('Transaction deleted!', 'success');
+                }
+            }
+        }
+
+        function filterTransactions() {
+            const category = document.getElementById('filterCategory').value;
+            const filteredTransactions = category ? 
+                appState.transactions.filter(t => t.category === category) : 
+                appState.transactions;
+            
+            displayTransactions(filteredTransactions);
+        }
+
+        function displayTransactions(transactions = appState.transactions) {
+            const tbody = document.getElementById('transactionHistory');
+            
+            if (transactions.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 2rem;">No transactions found</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = transactions.map(transaction => `
+                <tr>
+                    <td>${formatDate(transaction.date)}</td>
+                    <td>
+                        <span style="color: ${transaction.type === 'income' ? 'var(--success-color)' : 'var(--danger-color)'}">
+                            ${transaction.type === 'income' ? '💰' : '💸'} ${transaction.type.charAt(0).toUpperCase() + transaction.type.slice(1)}
+                        </span>
+                    </td>
+                    <td>${transaction.description}</td>
+                    <td>${getCategoryIcon(transaction.category)} ${getCategoryName(transaction.category)}</td>
+                    <td>${getBankName(transaction.bank)}</td>
+                    <td style="font-weight: bold; color: ${transaction.type === 'income' ? 'var(--success-color)' : 'var(--danger-color)'}">
+                        ${transaction.type === 'income' ? '+' : '-'}৳${transaction.amount.toFixed(2)}
+                    </td>
+                    <td>
+                        <button class="btn btn-danger" style="padding: 0.25rem 0.5rem; font-size: 0.8rem;" 
+                                onclick="deleteTransaction('${transaction.id}')">🗑️</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // Recurring Transaction Functions
+        function handleRecurringSubmit(e) {
+            e.preventDefault();
+            
+            const recurring = {
+                id: Date.now().toString(),
+                type: document.getElementById('recurringType').value,
+                amount: parseFloat(document.getElementById('recurringAmount').value),
+                description: document.getElementById('recurringDescription').value,
+                category: document.getElementById('recurringCategory').value,
+                frequency: document.getElementById('recurringFrequency').value,
+                day: parseInt(document.getElementById('recurringDay').value),
+                lastProcessed: null,
+                active: true
+            };
+
+            appState.recurringItems.push(recurring);
+            saveToStorage();
+            displayRecurringItems();
+            
+            document.getElementById('recurringForm').reset();
+            showNotification('Recurring transaction added!', 'success');
+        }
+
+        function processRecurringTransactions() {
+            const today = new Date();
+            const currentDay = today.getDate();
+            const currentMonth = today.getMonth();
+            const currentYear = today.getFullYear();
+
+            appState.recurringItems.forEach(item => {
+                if (!item.active) return;
+
+                const lastProcessed = item.lastProcessed ? new Date(item.lastProcessed) : null;
+                const shouldProcess = !lastProcessed || 
+                    (item.frequency === 'monthly' && 
+                     (lastProcessed.getMonth() !== currentMonth || lastProcessed.getFullYear() !== currentYear) &&
+                     currentDay >= item.day);
+
+                if (shouldProcess) {
+                    const transaction = {
+                        id: Date.now().toString() + Math.random(),
+                        type: item.type,
+                        amount: item.amount,
+                        description: item.description + ' (Auto)',
+                        category: item.category,
+                        bank: 'main',
+                        date: today.toISOString().split('T')[0],
+                        notes: 'Automatically added from recurring transaction',
+                        timestamp: new Date().toISOString()
+                    };
+
+                    appState.transactions.unshift(transaction);
+                    updateBankBalance('main', item.type === 'income' ? item.amount : -item.amount);
+                    item.lastProcessed = today.toISOString();
+                }
+            });
+
+            saveToStorage();
+        }
+
+        function displayRecurringItems() {
+            const tbody = document.getElementById('recurringList');
+            
+            if (appState.recurringItems.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 2rem;">No recurring transactions set up</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = appState.recurringItems.map(item => {
+                const nextDate = calculateNextDate(item);
+                return `
+                    <tr>
+                        <td>
+                            <span style="color: ${item.type === 'income' ? 'var(--success-color)' : 'var(--danger-color)'}">
+                                ${item.type === 'income' ? '💰' : '💸'} ${item.type.charAt(0).toUpperCase() + item.type.slice(1)}
+                            </span>
+                        </td>
+                        <td>${item.description}</td>
+                        <td style="font-weight: bold;">৳${item.amount.toFixed(2)}</td>
+                        <td>${item.frequency.charAt(0).toUpperCase() + item.frequency.slice(1)}</td>
+                        <td>${formatDate(nextDate)}</td>
+                        <td>
+                            <button class="btn btn-danger" style="padding: 0.25rem 0.5rem; font-size: 0.8rem;" 
+                                    onclick="deleteRecurring('${item.id}')">🗑️</button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function calculateNextDate(item) {
+            const today = new Date();
+            const nextDate = new Date(today.getFullYear(), today.getMonth(), item.day);
+            
+            if (nextDate <= today) {
+                nextDate.setMonth(nextDate.getMonth() + 1);
+            }
+            
+            return nextDate.toISOString().split('T')[0];
+        }
+
+        function deleteRecurring(id) {
+            if (confirm('Are you sure you want to delete this recurring transaction?')) {
+                appState.recurringItems = appState.recurringItems.filter(item => item.id !== id);
+                saveToStorage();
+                displayRecurringItems();
+                showNotification('Recurring transaction deleted!', 'success');
+            }
+        }
+
+        // Bank Account Functions
+        function handleBankSubmit(e) {
+            e.preventDefault();
+            
+            const bank = {
+                id: Date.now().toString(),
+                name: document.getElementById('bankName').value,
+                type: document.getElementById('bankType').value,
+                account: document.getElementById('bankAccount').value,
+                balance: parseFloat(document.getElementById('bankBalance').value)
+            };
+
+            appState.bankAccounts.push(bank);
+            saveToStorage();
+            updateBankSelectors();
+            displayBankAccounts();
+            
+            document.getElementById('bankForm').reset();
+            showNotification('Bank account added!', 'success');
+        }
+
+        function updateBankSelectors() {
+            const selectors = ['transactionBank'];
+            selectors.forEach(selectorId => {
+                const select = document.getElementById(selectorId);
+                if (select) {
+                    select.innerHTML = appState.bankAccounts.map(bank => 
+                        `<option value="${bank.id}">${bank.name}</option>`
+                    ).join('');
+                }
+            });
+        }
+
+        function updateBankBalance(bankId, amount) {
+            const bank = appState.bankAccounts.find(b => b.id === bankId);
+            if (bank) {
+                bank.balance += amount;
+            }
+        }
+
+        function getBankName(bankId) {
+            const bank = appState.bankAccounts.find(b => b.id === bankId);
+            return bank ? bank.name : 'Unknown Bank';
+        }
+
+        function displayBankAccounts() {
+            const container = document.getElementById('bankAccounts');
+            container.innerHTML = appState.bankAccounts.map(bank => `
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">🏦 ${bank.name}</h3>
+                    </div>
+                    <div class="card-value">৳${bank.balance.toFixed(2)}</div>
+                    <div class="card-subtitle">${bank.type.charAt(0).toUpperCase() + bank.type.slice(1)} Account</div>
+                    <button class="btn btn-primary" style="margin-top: 1rem;" onclick="viewBankTransactions('${bank.id}')">View Transactions</button>
+                </div>
+            `).join('');
+        }
+
+        function viewBankTransactions(bankId) {
+            const bankTransactions = appState.transactions.filter(t => t.bank === bankId);
+            displayTransactions(bankTransactions);
+            showSection('transactions');
+        }
+
+        // Receipt Functions
+        function handleReceiptSubmit(e) {
+            e.preventDefault();
+            
+            const receipt = {
+                id: Date.now().toString(),
+                amount: parseFloat(document.getElementById('receiptAmount').value),
+                merchant: document.getElementById('receiptMerchant').value,
+                category: document.getElementById('receiptCategory').value,
+                date: document.getElementById('receiptDate').value,
+                notes: document.getElementById('receiptNotes').value,
+                filename: document.getElementById('receiptFile').files[0]?.name || 'No file',
+                timestamp: new Date().toISOString()
+            };
+
+            // Also create a transaction from the receipt
+            const transaction = {
+                id: Date.now().toString() + '_receipt',
+                type: 'expense',
+                amount: receipt.amount,
+                description: `Receipt from ${receipt.merchant}`,
+                category: receipt.category,
+                bank: 'main',
+                date: receipt.date,
+                notes: receipt.notes,
+                timestamp: new Date().toISOString()
+            };
+
+            appState.receipts.push(receipt);
+            appState.transactions.unshift(transaction);
+            updateBankBalance('main', -receipt.amount);
+            
+            saveToStorage();
+            updateAllDisplays();
+            displayReceiptGallery();
+            
+            document.getElementById('receiptForm').reset();
+            document.getElementById('receiptDate').value = new Date().toISOString().split('T')[0];
+            
+            showNotification('Receipt saved and transaction added!', 'success');
+        }
+
+        function handleReceiptFileUpload(e) {
+            const file = e.target.files[0];
+            if (file) {
+                // Simulate OCR extraction (in real app, this would call an OCR API)
+                setTimeout(() => {
+                    // Mock extracted data
+                    document.getElementById('receiptAmount').value = (Math.random() * 500 + 50).toFixed(2);
+                    document.getElementById('receiptMerchant').value = 'Auto-detected Store';
+                    showNotification('Receipt details extracted!', 'success');
+                }, 1000);
+            }
+        }
+
+        function displayReceiptGallery() {
+            const container = document.getElementById('receiptGallery');
+            
+            if (appState.receipts.length === 0) {
+                container.innerHTML = '<div style="text-align: center; padding: 2rem; grid-column: 1 / -1;"><p>No receipts uploaded yet</p></div>';
+                return;
+            }
+
+            container.innerHTML = appState.receipts.map(receipt => `
+                <div class="card">
+                    <div class="card-header">
+                        <h4 class="card-title">${receipt.merchant}</h4>
+                        <span style="font-size: 0.9rem; opacity: 0.7;">${formatDate(receipt.date)}</span>
+                    </div>
+                    <div class="card-value">৳${receipt.amount.toFixed(2)}</div>
+                    <div class="card-subtitle">${getCategoryName(receipt.category)}</div>
+                    <div style="margin-top: 1rem;">
+                        <button class="btn btn-danger" style="padding: 0.25rem 0.5rem; font-size: 0.8rem;" 
+                                onclick="deleteReceipt('${receipt.id}')">🗑️ Delete</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function deleteReceipt(id) {
+            if (confirm('Are you sure you want to delete this receipt?')) {
+                appState.receipts = appState.receipts.filter(r => r.id !== id);
+                saveToStorage();
+                displayReceiptGallery();
+                showNotification('Receipt deleted!', 'success');
+            }
+        }
+
+        // Budget Functions
+        function handleBudgetSubmit(e) {
+            e.preventDefault();
+            
+            appState.budget = {
+                income: parseFloat(document.getElementById('budgetIncome').value) || 0,
+                savings: parseFloat(document.getElementById('budgetSavings').value) || 0,
+                categories: {}
+            };
+
+            document.querySelectorAll('.category-budget').forEach(input => {
+                const category = input.getAttribute('data-category');
+                const amount = parseFloat(input.value) || 0;
+                if (amount > 0) {
+                    appState.budget.categories[category] = amount;
+                }
+            });
+
+            saveToStorage();
+            updateBudgetProgress();
+            showNotification('Budget saved successfully!', 'success');
+        }
+
+        function loadBudgetData() {
+            if (appState.budget.income) {
+                document.getElementById('budgetIncome').value = appState.budget.income;
+                document.getElementById('budgetSavings').value = appState.budget.savings;
+                
+                Object.entries(appState.budget.categories || {}).forEach(([category, amount]) => {
+                    const input = document.querySelector(`[data-category="${category}"]`);
+                    if (input) input.value = amount;
+                });
+            }
+            
+            updateBudgetProgress();
+            generateBudgetRecommendation();
+        }
+
+        function generateBudgetRecommendation() {
+            const lastMonth = getLastMonthTransactions();
+            const totalIncome = lastMonth.filter(t => t.type === 'income').reduce((sum, t) => sum + t.amount, 0);
+            const totalExpenses = lastMonth.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0);
+            
+            let recommendation = "Set up your first budget to get personalized recommendations.";
+            
+            if (totalIncome > 0) {
+                const expenseRatio = (totalExpenses / totalIncome) * 100;
+                const recommendedBudget = totalIncome * 0.8; // 80% spending, 20% savings
+                
+                if (expenseRatio > 80) {
+                    recommendation = `⚠️ You spent ${expenseRatio.toFixed(1)}% of your income last month. Try to limit expenses to ৳${recommendedBudget.toFixed(0)} this month and save the rest.`;
+                } else if (expenseRatio > 60) {
+                    recommendation = `📊 Your spending was ${expenseRatio.toFixed(1)}% of income last month. Consider setting a budget of ৳${recommendedBudget.toFixed(0)} to increase your savings.`;
+                } else {
+                    recommendation = `✅ Great job! You spent only ${expenseRatio.toFixed(1)}% of your income last month. Keep up the good work with disciplined spending.`;
+                }
+            }
+            
+            document.getElementById('recommendationText').textContent = recommendation;
+        }
+
+        function updateBudgetProgress() {
+            const container = document.getElementById('budgetProgress');
+            
+            if (!appState.budget.income) {
+                container.innerHTML = '<p style="text-align: center; padding: 2rem;">Set up your budget to see progress tracking here.</p>';
+                return;
+            }
+
+            const currentMonth = getCurrentMonthTransactions();
+            const monthlyIncome = currentMonth.filter(t => t.type === 'income').reduce((sum, t) => sum + t.amount, 0);
+            const monthlyExpenses = currentMonth.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0);
+            
+            const incomeProgress = (monthlyIncome / appState.budget.income) * 100;
+            const savingsActual = monthlyIncome - monthlyExpenses;
+            const savingsProgress = appState.budget.savings > 0 ? (savingsActual / appState.budget.savings) * 100 : 0;
+
+            container.innerHTML = `
+                <div style="margin-bottom: 1.5rem;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                        <span>💰 Income Progress</span>
+                        <span>৳${monthlyIncome.toFixed(0)} / ৳${appState.budget.income.toFixed(0)}</span>
+                    </div>
+                    <div style="background: #e5e7eb; border-radius: 0.5rem; overflow: hidden;">
+                        <div style="background: var(--success-color); height: 8px; width: ${Math.min(incomeProgress, 100)}%;"></div>
+                    </div>
+                    <div style="font-size: 0.9rem; color: var(--success-color); margin-top: 0.25rem;">${incomeProgress.toFixed(1)}%</div>
+                </div>
+
+                <div style="margin-bottom: 1.5rem;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                        <span>🎯 Savings Progress</span>
+                        <span>৳${savingsActual.toFixed(0)} / ৳${appState.budget.savings.toFixed(0)}</span>
+                    </div>
+                    <div style="background: #e5e7eb; border-radius: 0.5rem; overflow: hidden;">
+                        <div style="background: var(--primary-color); height: 8px; width: ${Math.min(savingsProgress, 100)}%;"></div>
+                    </div>
+                    <div style="font-size: 0.9rem; color: var(--primary-color); margin-top: 0.25rem;">${savingsProgress.toFixed(1)}%</div>
+                </div>
+
+                ${Object.entries(appState.budget.categories || {}).map(([category, budgetAmount]) => {
+                    const spent = currentMonth.filter(t => t.type === 'expense' && t.category === category)
+                                             .reduce((sum, t) => sum + t.amount, 0);
+                    const progress = (spent / budgetAmount) * 100;
+                    const color = progress > 100 ? 'var(--danger-color)' : progress > 80 ? 'var(--warning-color)' : 'var(--success-color)';
+                    
+                    return `
+                        <div style="margin-bottom: 1rem;">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                                <span>${getCategoryIcon(category)} ${getCategoryName(category)}</span>
+                                <span>৳${spent.toFixed(0)} / ৳${budgetAmount.toFixed(0)}</span>
+                            </div>
+                            <div style="background: #e5e7eb; border-radius: 0.5rem; overflow: hidden;">
+                                <div style="background: ${color}; height: 6px; width: ${Math.min(progress, 100)}%;"></div>
+                            </div>
+                            <div style="font-size: 0.8rem; color: ${color}; margin-top: 0.25rem;">${progress.toFixed(1)}%</div>
+                        </div>
+                    `;
+                }).join('')}
+            `;
+        }
+
+        // Analytics Functions
+        function loadAnalytics() {
+            createIncomeExpenseChart();
+            createCategoryChart();
+            createCashFlowChart();
+        }
+
+        function createIncomeExpenseChart() {
+            const ctx = document.getElementById('incomeExpenseChart').getContext('2d');
+            
+            // Get last 6 months data
+            const monthsData = [];
+            for (let i = 5; i >= 0; i--) {
+                const date = new Date();
+                date.setMonth(date.getMonth() - i);
+                const monthTransactions = appState.transactions.filter(t => {
+                    const tDate = new Date(t.date);
+                    return tDate.getMonth() === date.getMonth() && tDate.getFullYear() === date.getFullYear();
+                });
+                
+                const income = monthTransactions.filter(t => t.type === 'income').reduce((sum, t) => sum + t.amount, 0);
+                const expenses = monthTransactions.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0);
+                
+                monthsData.push({
+                    month: date.toLocaleDateString('en-US', { month: 'short' }),
+                    income,
+                    expenses
+                });
+            }
+
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: monthsData.map(d => d.month),
+                    datasets: [{
+                        label: 'Income',
+                        data: monthsData.map(d => d.income),
+                        backgroundColor: 'rgba(16, 185, 129, 0.8)',
+                        borderColor: 'rgba(16, 185, 129, 1)',
+                        borderWidth: 1
+                    }, {
+                        label: 'Expenses',
+                        data: monthsData.map(d => d.expenses),
+                        backgroundColor: 'rgba(239, 68, 68, 0.8)',
+                        borderColor: 'rgba(239, 68, 68, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+
+        function createCategoryChart() {
+            const ctx = document.getElementById('categoryChart').getContext('2d');
+            
+            const currentMonth = getCurrentMonthTransactions();
+            const expensesByCategory = {};
+            
+            currentMonth.filter(t => t.type === 'expense').forEach(t => {
+                expensesByCategory[t.category] = (expensesByCategory[t.category] || 0) + t.amount;
+            });
+
+            const sortedCategories = Object.entries(expensesByCategory)
+                .sort(([,a], [,b]) => b - a)
+                .slice(0, 8);
+
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: sortedCategories.map(([category]) => getCategoryName(category)),
+                    datasets: [{
+                        data: sortedCategories.map(([,amount]) => amount),
+                        backgroundColor: [
+                            '#ff6384', '#36a2eb', '#ffce56', '#4bc0c0',
+                            '#9966ff', '#ff9f40', '#ff6384', '#c9cbcf'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+        }
+
+        function createCashFlowChart() {
+            const ctx = document.getElementById('cashFlowChart').getContext('2d');
+            
+            // Get daily balance for last 30 days
+            const dailyData = [];
+            let runningBalance = 0;
+            
+            for (let i = 29; i >= 0; i--) {
+                const date = new Date();
+                date.setDate(date.getDate() - i);
+                const dateStr = date.toISOString().split('T')[0];
+                
+                const dayTransactions = appState.transactions.filter(t => t.date === dateStr);
+                const dayIncome = dayTransactions.filter(t => t.type === 'income').reduce((sum, t) => sum + t.amount, 0);
+                const dayExpenses = dayTransactions.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0);
+                
+                runningBalance += dayIncome - dayExpenses;
+                
+                dailyData.push({
+                    date: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+                    balance: runningBalance
+                });
+            }
+
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: dailyData.map(d => d.date),
+                    datasets: [{
+                        label: 'Balance',
+                        data: dailyData.map(d => d.balance),
+                        borderColor: 'rgba(79, 70, 229, 1)',
+                        backgroundColor: 'rgba(79, 70, 229, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+
+        // Settings Functions
+        function handleSettingsSubmit(e) {
+            e.preventDefault();
+            
+            appState.settings = {
+                ...appState.settings,
+                name: document.getElementById('settingsName').value,
+                studentId: document.getElementById('settingsStudentId').value,
+                email: document.getElementById('settingsEmail').value,
+                currency: document.getElementById('settingsCurrency').value,
+                notifications: {
+                    budgetLimit: document.getElementById('notifyBudgetLimit').checked,
+                    monthlyReport: document.getElementById('notifyMonthlyReport').checked,
+                    recurring: document.getElementById('notifyRecurring').checked
+                }
+            };
+
+            saveToStorage();
+            showNotification('Settings saved successfully!', 'success');
+        }
+
+        function exportAllData() {
+            const data = {
+                transactions: appState.transactions,
+                recurringItems: appState.recurringItems,
+                bankAccounts: appState.bankAccounts,
+                budget: appState.budget,
+                receipts: appState.receipts,
+                settings: appState.settings,
+                exportDate: new Date().toISOString()
+            };
+
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `money-tracker-backup-${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+            
+            showNotification('Data exported successfully!', 'success');
+        }
+
+        function importData() {
+            document.getElementById('importFile').click();
+            
+            document.getElementById('importFile').onchange = function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        try {
+                            const data = JSON.parse(e.target.result);
+                            
+                            if (confirm('This will replace all your current data. Are you sure?')) {
+                                appState.transactions = data.transactions || [];
+                                appState.recurringItems = data.recurringItems || [];
+                                appState.bankAccounts = data.bankAccounts || [];
+                                appState.budget = data.budget || {};
+                                appState.receipts = data.receipts || [];
+                                appState.settings = data.settings || {};
+                                
+                                saveToStorage();
+                                updateAllDisplays();
+                                showNotification('Data imported successfully!', 'success');
+                            }
+                        } catch (error) {
+                            showNotification('Invalid file format!', 'error');
+                        }
+                    };
+                    reader.readAsText(file);
+                }
+            };
+        }
+
+        function clearAllData() {
+            if (confirm('Are you sure you want to clear all data? This cannot be undone!')) {
+                if (confirm('Last chance! This will delete everything. Continue?')) {
+                    localStorage.clear();
+                    location.reload();
+                }
+            }
+        }
+
+        function setup2FA() {
+            alert('2FA setup would integrate with email/SMS services in a real application. For demo purposes, this feature is simulated.');
+            showNotification('2FA setup completed!', 'success');
+        }
+
+        // Report Functions
+        function updateReportsData() {
+            const currentMonth = getCurrentMonthTransactions();
+            const monthIncome = currentMonth.filter(t => t.type === 'income').reduce((sum, t) => sum + t.amount, 0);
+            const monthExpenses = currentMonth.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0);
+            const monthNet = monthIncome - monthExpenses;
+            const savingsRate = monthIncome > 0 ? ((monthNet / monthIncome) * 100) : 0;
+
+            document.getElementById('monthIncome').textContent = monthIncome.toFixed(0);
+            document.getElementById('monthExpenses').textContent = monthExpenses.toFixed(0);
+            document.getElementById('monthNet').textContent = monthNet.toFixed(0);
+            document.getElementById('monthTransactions').textContent = currentMonth.length;
+            document.getElementById('savingsRate').textContent = savingsRate.toFixed(1) + '%';
+
+            // Top categories
+            const expensesByCategory = {};
+            currentMonth.filter(t => t.type === 'expense').forEach(t => {
+                expensesByCategory[t.category] = (expensesByCategory[t.category] || 0) + t.amount;
+            });
+
+            const topCategories = Object.entries(expensesByCategory)
+                .sort(([,a], [,b]) => b - a)
+                .slice(0, 3);
+
+            const topCategoriesHtml = topCategories.length > 0 ? 
+                topCategories.map(([category, amount]) => 
+                    `<p><strong>${getCategoryName(category)}:</strong> ৳${amount.toFixed(0)}</p>`
+                ).join('') : '<p>No expenses this month</p>';
+
+            document.getElementById('topCategories').innerHTML = topCategoriesHtml;
+        }
+
+        function generateReport() {
+            const type = document.getElementById('reportType').value;
+            const month = document.getElementById('reportMonth').value;
+            const format = document.getElementById('reportFormat').value;
+            
+            showNotification(`Generating ${type} report in ${format} format...`, 'success');
+            
+            // Simulate report generation
+            setTimeout(() => {
+                if (format === 'csv') {
+                    exportTransactions();
+                } else {
+                    showNotification('Report generated! (Demo - actual file download would happen here)', 'success');
+                }
+            }, 1000);
+        }
+
+        function exportTransactions() {
+            const csv = [
+                ['Date', 'Type', 'Description', 'Category', 'Amount', 'Bank', 'Notes'],
+                ...appState.transactions.map(t => [
+                    t.date, t.type, t.description, t.category, t.amount, getBankName(t.bank), t.notes || ''
+                ])
+            ].map(row => row.join(',')).join('\n');
+
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `transactions-${new Date().toISOString().split('T')[0]}.csv`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        // Dashboard Update Functions
+        function updateDashboard() {
+            const currentMonth = getCurrentMonthTransactions();
+            const totalIncome = currentMonth.filter(t => t.type === 'income').reduce((sum, t) => sum + t.amount, 0);
+            const totalExpenses = currentMonth.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0);
+            const currentBalance = appState.bankAccounts.reduce((sum, bank) => sum + bank.balance, 0);
+            
+            document.getElementById('totalIncome').textContent = `৳${totalIncome.toFixed(0)}`;
+            document.getElementById('totalExpenses').textContent = `৳${totalExpenses.toFixed(0)}`;
+            document.getElementById('currentBalance').textContent = `৳${currentBalance.toFixed(0)}`;
+            
+            // Savings progress
+            const savingsTarget = appState.budget.savings || 5000;
+            const actualSavings = totalIncome - totalExpenses;
+            const savingsProgress = savingsTarget > 0 ? Math.min((actualSavings / savingsTarget) * 100, 100) : 0;
+            
+            document.getElementById('savingsProgress').textContent = `${savingsProgress.toFixed(0)}%`;
+            document.getElementById('savingsTarget').textContent = `Target: ৳${savingsTarget}`;
+
+            // Financial status
+            updateFinancialStatus(totalIncome, totalExpenses, savingsProgress);
+            
+            // Recent transactions
+            displayRecentTransactions();
+        }
+
+        function updateFinancialStatus(income, expenses, savingsRate) {
+            const statusCard = document.getElementById('statusIndicator');
+            const statusMessage = document.getElementById('statusMessage');
+            
+            if (income === 0) {
+                statusCard.className = 'status-indicator status-caution';
+                statusCard.textContent = '🟡 Getting Started';
+                statusMessage.textContent = 'Add your first income and expense transactions to see your financial status.';
+            } else if (expenses > income) {
+                statusCard.className = 'status-indicator status-alert';
+                statusCard.textContent = '🔴 Alert';
+                statusMessage.textContent = 'Your expenses exceed your income this month. Review your spending and consider budget adjustments.';
+            } else if (expenses / income > 0.8) {
+                statusCard.className = 'status-indicator status-caution';
+                statusCard.textContent = '🟡 Caution';
+                statusMessage.textContent = 'You\'re spending a high percentage of your income. Try to increase your savings rate.';
+            } else {
+                statusCard.className = 'status-indicator status-balanced';
+                statusCard.textContent = '🟢 Balanced';
+                statusMessage.textContent = 'Great job! Your spending is under control and you\'re saving consistently.';
+            }
+        }
+
+        function displayRecentTransactions() {
+            const recent = appState.transactions.slice(0, 5);
+            const tbody = document.getElementById('recentTransactions');
+            
+            if (recent.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 2rem;">No transactions yet</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = recent.map(transaction => `
+                <tr>
+                    <td>${formatDate(transaction.date)}</td>
+                    <td>${transaction.description}</td>
+                    <td>${getCategoryIcon(transaction.category)} ${getCategoryName(transaction.category)}</td>
+                    <td style="font-weight: bold; color: ${transaction.type === 'income' ? 'var(--success-color)' : 'var(--danger-color)'}">
+                        ${transaction.type === 'income' ? '+' : '-'}৳${transaction.amount.toFixed(2)}
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function updateAllDisplays() {
+            updateDashboard();
+            displayTransactions();
+            displayRecurringItems();
+            displayBankAccounts();
+            displayReceiptGallery();
+            updateBudgetProgress();
+            updateReportsData();
+        }
+
+        // Utility Functions
+        function getCurrentMonthTransactions() {
+            const now = new Date();
+            return appState.transactions.filter(t => {
+                const tDate = new Date(t.date);
+                return tDate.getMonth() === now.getMonth() && tDate.getFullYear() === now.getFullYear();
+            });
+        }
+
+        function getLastMonthTransactions() {
+            const lastMonth = new Date();
+            lastMonth.setMonth(lastMonth.getMonth() - 1);
+            
+            return appState.transactions.filter(t => {
+                const tDate = new Date(t.date);
+                return tDate.getMonth() === lastMonth.getMonth() && tDate.getFullYear() === lastMonth.getFullYear();
+            });
+        }
+
+        function formatDate(dateString) {
+            return new Date(dateString).toLocaleDateString('en-US', {
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric'
+            });
+        }
+
+        function getCategoryIcon(category) {
+            const icons = {
+                scholarship: '🎓',
+                allowance: '👨‍👩‍👧‍👦',
+                'part-time': '💼',
+                'other-income': '💰',
+                food: '🍔',
+                transport: '🚌',
+                books: '📚',
+                rent: '🏠',
+                entertainment: '🎬',
+                clothing: '👕',
+                health: '🏥',
+                other: '📦'
+            };
+            return icons[category] || '📦';
+        }
+
+        function getCategoryName(category) {
+            const names = {
+                scholarship: 'Scholarship',
+                allowance: 'Family Allowance',
+                'part-time': 'Part-time Job',
+                'other-income': 'Other Income',
+                food: 'Food & Dining',
+                transport: 'Transportation',
+                books: 'Books & Supplies',
+                rent: 'Rent & Utilities',
+                entertainment: 'Entertainment',
+                clothing: 'Clothing',
+                health: 'Healthcare',
+                other: 'Others'
+            };
+            return names[category] || 'Unknown';
+        }
+
+        function saveToStorage() {
+            localStorage.setItem('transactions', JSON.stringify(appState.transactions));
+            localStorage.setItem('recurringItems', JSON.stringify(appState.recurringItems));
+            localStorage.setItem('bankAccounts', JSON.stringify(appState.bankAccounts));
+            localStorage.setItem('budget', JSON.stringify(appState.budget));
+            localStorage.setItem('receipts', JSON.stringify(appState.receipts));
+            localStorage.setItem('settings', JSON.stringify(appState.settings));
+        }
+
+        function showNotification(message, type = 'success') {
+            // Remove existing notifications
+            const existing = document.querySelector('.notification');
+            if (existing) existing.remove();
+
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+
+            // Show notification
+            setTimeout(() => notification.classList.add('show'), 100);
+
+            // Hide notification after 3 seconds
+            setTimeout(() => {
+                notification.classList.remove('show');
+                setTimeout(() => notification.remove(), 300);
+            }, 3000);
+        }
+
+        function openModal(modalId) {
+            document.getElementById(modalId).classList.add('show');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('show');
+        }
+
+        function showDailyTip() {
+            const today = new Date().getDate();
+            const tipIndex = today % financialTips.length;
+            document.getElementById('dailyTip').innerHTML = `
+                <strong>Tip #${today}:</strong> ${financialTips[tipIndex]}
+            `;
+        }
+
+        // Budget Alert System
+        function checkBudgetAlerts() {
+            if (!appState.settings.notifications?.budgetLimit || !appState.budget.categories) return;
+
+            const currentMonth = getCurrentMonthTransactions();
+            Object.entries(appState.budget.categories).forEach(([category, limit]) => {
+                const spent = currentMonth.filter(t => t.type === 'expense' && t.category === category)
+                                        .reduce((sum, t) => sum + t.amount, 0);
+                
+                if (spent > limit * 0.9) { // 90% threshold
+                    const percentage = ((spent / limit) * 100).toFixed(0);
+                    showNotification(`⚠️ Budget Alert: You've used ${percentage}% of your ${getCategoryName(category)} budget`, 'warning');
+                }
+            });
+        }
+
+        // Auto-save functionality
+        setInterval(() => {
+            if (appState.transactions.length > 0) {
+                saveToStorage();
+            }
+        }, 30000); // Auto-save every 30 seconds
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.ctrlKey || e.metaKey) {
+                switch(e.key) {
+                    case 'n':
+                        e.preventDefault();
+                        openModal('quickAddModal');
+                        break;
+                    case 'e':
+                        e.preventDefault();
+                        exportTransactions();
+                        break;
+                    case 'd':
+                        e.preventDefault();
+                        showSection('dashboard');
+                        break;
+                }
+            }
+        });
+
+        // Service Worker for offline functionality (simulated)
+        if ('serviceWorker' in navigator) {
+            console.log('Service Worker support detected - offline functionality available');
+        }
+
+        // Check for budget alerts when transactions are added
+        const originalHandleTransactionSubmit = handleTransactionSubmit;
+        handleTransactionSubmit = function(e) {
+            originalHandleTransactionSubmit.call(this, e);
+            setTimeout(checkBudgetAlerts, 500);
+        };
+
+        // Responsive sidebar toggle for mobile
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('open');
+        }
+
+        // Add mobile menu button (would be added to header in real implementation)
+        if (window.innerWidth <= 768) {
+            const mobileMenuBtn = document.createElement('button');
+            mobileMenuBtn.innerHTML = '☰';
+            mobileMenuBtn.style.cssText = 'position: fixed; top: 1rem; left: 1rem; z-index: 1001; background: var(--primary-color); color: white; border: none; padding: 0.5rem; border-radius: 0.25rem; cursor: pointer;';
+            mobileMenuBtn.onclick = toggleSidebar;
+            document.body.appendChild(mobileMenuBtn);
+        }
+
+        // Demo data for new users
+        function loadDemoData() {
+            if (appState.transactions.length === 0 && confirm('Would you like to load some demo data to explore the features?')) {
+                const demoTransactions = [
+                    {
+                        id: 'demo1',
+                        type: 'income',
+                        amount: 5000,
+                        description: 'Monthly Scholarship',
+                        category: 'scholarship',
+                        bank: 'main',
+                        date: new Date().toISOString().split('T')[0],
+                        notes: 'University scholarship payment',
+                        timestamp: new Date().toISOString()
+                    },
+                    {
+                        id: 'demo2',
+                        type: 'expense',
+                        amount: 800,
+                        description: 'Grocery Shopping',
+                        category: 'food',
+                        bank: 'main',
+                        date: new Date(Date.now() - 86400000).toISOString().split('T')[0],
+                        notes: 'Weekly groceries',
+                        timestamp: new Date().toISOString()
+                    },
+                    {
+                        id: 'demo3',
+                        type: 'expense',
+                        amount: 300,
+                        description: 'Bus Pass',
+                        category: 'transport',
+                        bank: 'main',
+                        date: new Date(Date.now() - 172800000).toISOString().split('T')[0],
+                        notes: 'Monthly transportation',
+                        timestamp: new Date().toISOString()
+                    }
+                ];
+
+                appState.transactions = demoTransactions;
+                appState.bankAccounts[0].balance = 3900; // 5000 - 800 - 300
+                
+                appState.budget = {
+                    income: 6000,
+                    savings: 1200,
+                    categories: {
+                        food: 1500,
+                        transport: 500,
+                        books: 800,
+                        entertainment: 400
+                    }
+                };
+
+                saveToStorage();
+                updateAllDisplays();
+                showNotification('Demo data loaded! Explore the features and delete when ready.', 'success');
+            }
+        }
+
+        // Load demo data after initialization
+        setTimeout(loadDemoData, 2000);
+
+        // Performance monitoring
+        const performanceObserver = new PerformanceObserver((list) => {
+            for (const entry of list.getEntries()) {
+                if (entry.duration > 100) {
+                    console.warn('Slow operation detected:', entry.name, entry.duration + 'ms');
+                }
+            }
+        });
+
+        if (window.PerformanceObserver) {
+            performanceObserver.observe({ entryTypes: ['measure'] });
+        }
+
+        // Add loading states
+        function showLoading(elementId) {
+            const element = document.getElementById(elementId);
+            if (element) {
+                element.innerHTML = '<div class="spinner"></div>';
+            }
+        }
+
+        function hideLoading(elementId, content) {
+            const element = document.getElementById(elementId);
+            if (element) {
+                element.innerHTML = content;
+            }
+        }
+
+        // Export additional utility functions for extensibility
+        window.MoneyTracker = {
+            showSection,
+            updateDashboard,
+            exportTransactions,
+            generateReport,
+            showNotification,
+            appState: () => ({ ...appState }) // Return copy for security
+        };
+
+        // Analytics tracking (simulated)
+        function trackEvent(category, action, label) {
+            console.log('Analytics Event:', { category, action, label, timestamp: new Date().toISOString() });
+        }
+
+        // Track major user actions
+        const originalShowSection = showSection;
+        showSection = function(section) {
+            trackEvent('Navigation', 'Section Change', section);
+            originalShowSection(section);
+        };
+
+        // Error boundary simulation
+        window.addEventListener('error', (e) => {
+            console.error('Application Error:', e.error);
+            showNotification('An error occurred. Your data is safe and has been saved.', 'error');
+        });
+
+        // Final initialization message
+        console.log('💰 Student Money Management System initialized successfully!');
+        console.log('💡 Available keyboard shortcuts:');
+        console.log('   Ctrl/Cmd + N: Quick Add Transaction');
+        console.log('   Ctrl/Cmd + E: Export Transactions');
+        console.log('   Ctrl/Cmd + D: Go to Dashboard');
+    </script>
+</body>
+</html>

@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Money Tracker - Login</title>
+    <link rel="stylesheet" href="assets/css/auth.css">
+    <link rel="stylesheet" href="assets/css/common.css">
+</head>
+<body>
+    <div class="auth-container">
+        <div class="auth-card">
+            <div class="auth-header">
+                <h1>💰 MoneyTracker</h1>
+                <p>Smart Financial Management for Students</p>
+            </div>
+
+            <!-- Login Form -->
+            <div class="auth-form" id="loginForm">
+                <h2>Welcome Back!</h2>
+                <form id="loginFormElement">
+                    <div class="form-group">
+                        <label class="form-label">Email or Student ID</label>
+                        <input type="text" class="form-input" id="loginEmail" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Password</label>
+                        <input type="password" class="form-input" id="loginPassword" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="rememberMe">
+                            Remember me
+                        </label>
+                    </div>
+                    <button type="submit" class="btn btn-primary full-width">🔑 Sign In</button>
+                </form>
+                
+                <div class="auth-links">
+                    <a href="#" onclick="showForgotPassword()">Forgot Password?</a>
+                    <p>Don't have an account? <a href="#" onclick="showSignup()">Sign Up</a></p>
+                </div>
+            </div>
+
+            <!-- Signup Form -->
+            <div class="auth-form hidden" id="signupForm">
+                <h2>Create Account</h2>
+                <form id="signupFormElement">
+                    <div class="form-group">
+                        <label class="form-label">Full Name</label>
+                        <input type="text" class="form-input" id="signupName" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Student ID</label>
+                        <input type="text" class="form-input" id="signupStudentId" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Email Address</label>
+                        <input type="email" class="form-input" id="signupEmail" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Password</label>
+                        <input type="password" class="form-input" id="signupPassword" required minlength="6">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Confirm Password</label>
+                        <input type="password" class="form-input" id="signupConfirmPassword" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="agreeTerms" required>
+                            I agree to the <a href="#" target="_blank">Terms of Service</a>
+                        </label>
+                    </div>
+                    <button type="submit" class="btn btn-primary full-width">🚀 Create Account</button>
+                </form>
+                
+                <div class="auth-links">
+                    <p>Already have an account? <a href="#" onclick="showLogin()">Sign In</a></p>
+                </div>
+            </div>
+
+            <!-- Forgot Password Form -->
+            <div class="auth-form hidden" id="forgotForm">
+                <h2>Reset Password</h2>
+                <p>Enter your email to receive reset instructions</p>
+                <form id="forgotFormElement">
+                    <div class="form-group">
+                        <label class="form-label">Email Address</label>
+                        <input type="email" class="form-input" id="forgotEmail" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary full-width">📧 Send Reset Link</button>
+                </form>
+                
+                <div class="auth-links">
+                    <p><a href="#" onclick="showLogin()">Back to Sign In</a></p>
+                </div>
+            </div>
+
+            <!-- 2FA Verification -->
+            <div class="auth-form hidden" id="twoFactorForm">
+                <h2>Two-Factor Authentication</h2>
+                <p>Enter the 6-digit code sent to your email</p>
+                <form id="twoFactorFormElement">
+                    <div class="form-group">
+                        <div class="otp-inputs">
+                            <input type="text" class="otp-input" maxlength="1" required>
+                            <input type="text" class="otp-input" maxlength="1" required>
+                            <input type="text" class="otp-input" maxlength="1" required>
+                            <input type="text" class="otp-input" maxlength="1" required>
+                            <input type="text" class="otp-input" maxlength="1" required>
+                            <input type="text" class="otp-input" maxlength="1" required>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary full-width">✅ Verify Code</button>
+                </form>
+                
+                <div class="auth-links">
+                    <a href="#" onclick="resendOTP()">Resend Code</a>
+                    <p><a href="#" onclick="showLogin()">Back to Sign In</a></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Features Section -->
+        <div class="features-section">
+            <h3>🌟 Why Choose MoneyTracker?</h3>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">📊</div>
+                    <h4>Smart Analytics</h4>
+                    <p>Visual insights into your spending patterns</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🎯</div>
+                    <h4>Budget Planning</h4>
+                    <p>AI-powered budget recommendations</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🔔</div>
+                    <h4>Smart Alerts</h4>
+                    <p>Never overspend with intelligent notifications</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🧾</div>
+                    <h4>Receipt Scanning</h4>
+                    <p>Upload receipts and extract data automatically</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification System -->
+    <div id="notification" class="notification hidden"></div>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay hidden">
+        <div class="spinner"></div>
+        <p>Processing...</p>
+    </div>
+
+    <script src="assets/js/auth.js"></script>
+    <script src="assets/js/utils.js"></script>
+</body>
+</html>

@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MoneyTracker - Dashboard</title>
+    <link rel="stylesheet" href="assets/css/common.css">
+    <link rel="stylesheet" href="assets/css/dashboard.css">
+    <link rel="stylesheet" href="assets/css/sidebar.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <nav class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h1>💰 MoneyTracker</h1>
+                <div class="user-info">
+                    <div>Welcome, <strong id="username">Loading...</strong></div>
+                    <div>Student ID: <span id="studentId">#Loading</span></div>
+                </div>
+            </div>
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="dashboard.html" class="nav-link active">
+                        <i>📊</i> Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="transactions.html" class="nav-link">
+                        <i>💳</i> Transactions
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="analytics.html" class="nav-link">
+                        <i>📈</i> Analytics
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="budget.html" class="nav-link">
+                        <i>🎯</i> Budget Planner
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="recurring.html" class="nav-link">
+                        <i>🔄</i> Recurring Items
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="banks.html" class="nav-link">
+                        <i>🏦</i> Bank Accounts
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="receipts.html" class="nav-link">
+                        <i>🧾</i> Receipts
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="reports.html" class="nav-link">
+                        <i>📋</i> Reports
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="settings.html" class="nav-link">
+                        <i>⚙️</i> Settings
+                    </a>
+                </li>
+                <li class="nav-item nav-logout">
+                    <a href="#" class="nav-link" onclick="logout()">
+                        <i>🚪</i> Logout
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="header">
+                <div class="header-left">
+                    <button class="mobile-menu-btn" onclick="toggleSidebar()">☰</button>
+                    <div>
+                        <h2>Dashboard</h2>
+                        <p>Overview of your financial status</p>
+                    </div>
+                </div>
+                <div class="header-right">
+                    <button class="theme-toggle" id="themeToggle">🌙 Dark Mode</button>
+                    <button class="btn btn-primary" onclick="openQuickAdd()">+ Quick Add</button>
+                </div>
+            </header>
+
+            <div class="content-area">
+                <!-- Dashboard Cards -->
+                <div class="dashboard-grid">
+                    <div class="card income-card">
+                        <div class="card-header">
+                            <h3 class="card-title">Total Income</h3>
+                            <div class="card-icon">💰</div>
+                        </div>
+                        <div class="card-value" id="totalIncome">৳0</div>
+                        <div class="card-subtitle">This month</div>
+                    </div>
+                    <div class="card expense-card">
+                        <div class="card-header">
+                            <h3 class="card-title">Total Expenses</h3>
+                            <div class="card-icon">💸</div>
+                        </div>
+                        <div class="card-value" id="totalExpenses">৳0</div>
+                        <div class="card-subtitle">This month</div>
+                    </div>
+                    <div class="card balance-card">
+                        <div class="card-header">
+                            <h3 class="card-title">Current Balance</h3>
+                            <div class="card-icon">💳</div>
+                        </div>
+                        <div class="card-value" id="currentBalance">৳0</div>
+                        <div class="card-subtitle">Available now</div>
+                    </div>
+                    <div class="card savings-card">
+                        <div class="card-header">
+                            <h3 class="card-title">Savings Goal</h3>
+                            <div class="card-icon">🎯</div>
+                        </div>
+                        <div class="card-value" id="savingsProgress">0%</div>
+                        <div class="card-subtitle" id="savingsTarget">Target: ৳5000</div>
+                    </div>
+                </div>
+
+                <!-- Financial Status Alert -->
+                <div class="card" id="statusCard">
+                    <div class="card-header">
+                        <h3 class="card-title">Financial Status</h3>
+                        <span class="status-indicator status-balanced" id="statusIndicator">🟢 Balanced</span>
+                    </div>
+                    <p id="statusMessage">Great job! Your spending is under control and you're saving consistently.</p>
+                </div>
+
+                <!-- Recent Transactions -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Recent Transactions</h3>
+                        <a href="transactions.html" class="btn btn-primary">View All</a>
+                    </div>
+                    <div class="table-container">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Description</th>
+                                    <th>Category</th>
+                                    <th>Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody id="recentTransactions">
+                                <tr>
+                                    <td colspan="4" style="text-align: center; padding: 2rem;">
+                                        <div class="spinner"></div>
+                                        Loading transactions...
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Quick Stats Chart -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Monthly Overview</h3>
+                        <a href="analytics.html" class="btn btn-secondary">View Analytics</a>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="monthlyChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Daily Tips -->
+                <div class="tips-sidebar">
+                    <h3>💡 Daily Finance Tip</h3>
+                    <div class="tip-item" id="dailyTip">
+                        <div class="spinner"></div>
+                        Loading tip...
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Floating Action Button -->
+    <button class="fab" onclick="openQuickAdd()">+</button>
+
+    <!-- Quick Add Modal -->
+    <div class="modal" id="quickAddModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>⚡ Quick Add Transaction</h3>
+                <button onclick="closeModal('quickAddModal')" class="close-btn">&times;</button>
+            </div>
+            <form id="quickAddForm">
+                <div class="form-group">
+                    <label class="form-label">Type</label>
+                    <div class="radio-group">
+                        <label class="radio-label">
+                            <input type="radio" name="quickType" value="income" required>
+                            💰 Income
+                        </label>
+                        <label class="radio-label">
+                            <input type="radio" name="quickType" value="expense" required>
+                            💸 Expense
+                        </label>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Amount (৳)</label>
+                    <input type="number" class="form-input" id="quickAmount" required min="0" step="0.01">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Description</label>
+                    <input type="text" class="form-input" id="quickDescription" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Category</label>
+                    <select class="form-select" id="quickCategory" required>
+                        <option value="">Select Category</option>
+                        <optgroup label="Income">
+                            <option value="scholarship">🎓 Scholarship</option>
+                            <option value="allowance">👨‍👩‍👧‍👦 Family Allowance</option>
+                            <option value="part-time">💼 Part-time Job</option>
+                            <option value="other-income">💰 Other Income</option>
+                        </optgroup>
+                        <optgroup label="Expenses">
+                            <option value="food">🍔 Food & Dining</option>
+                            <option value="transport">🚌 Transportation</option>
+                            <option value="books">📚 Books & Supplies</option>
+                            <option value="rent">🏠 Rent & Utilities</option>
+                            <option value="entertainment">🎬 Entertainment</option>
+                            <option value="clothing">👕 Clothing</option>
+                            <option value="health">🏥 Healthcare</option>
+                            <option value="other">📦 Others</option>
+                        </optgroup>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary full-width">💾 Add Transaction</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="assets/js/utils.js"></script>
+    <script src="assets/js/auth-check.js"></script>
+    <script src="assets/js/dashboard.js"></script>
+    <script src="assets/js/quick-add.js"></script>
+    <script src="assets/js/theme.js"></script>
+</body>
+</html>
